@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>수제 두바이 초콜릿 팩토리 - 레시피 & 포장 커스텀 시뮬레이터</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    /* 슬림 스크롤바 */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-3 md:p-6 font-sans">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- 초기화 알림 토스트 (숨김 상태) -->
+    <div id="resetToast" class="hidden fixed top-5 right-5 z-50 bg-emerald-600 text-white px-5 py-3 rounded-xl shadow-2xl flex items-center gap-2 border border-emerald-400 font-bold text-sm transition-all transform">
+      <span>🔄</span> 모든 데이터가 1라운드(자본금 25,000원)로 초기화되었습니다!
+    </div>
+
+    <!-- 상단 헤더 -->
+    <header class="bg-slate-900 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-2xl flex flex-col md:flex-row justify-between items-center gap-4">
+      <div class="flex items-center gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-600 via-orange-500 to-amber-300 flex items-center justify-center text-3xl shadow-lg shadow-amber-500/20">
+          🍫
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/40">
+              6학년 2학기 사회: 경제 주체(기업)의 합리적 선택
+            </span>
+            <span class="px-2 py-0.5 rounded-full text-[11px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+              현실적 시장 경제 가격 탄력성 반영
+            </span>
+          </div>
+          <h1 class="text-2xl md:text-3xl font-black text-white mt-1 tracking-tight">
+            수제 두바이 초콜릿 팩토리 경영 배틀
+          </h1>
+          <p class="text-xs md:text-sm text-slate-400">양평초등학교 6학년 2반 사회 [기업의 합리적 선택과 이윤 추구] AI 시장 시뮬레이터</p>
+        </div>
+      </div>
+
+      <!-- 라운드 & 시장 환경 배지 -->
+      <div class="flex items-center gap-4 bg-slate-950 border border-slate-800 rounded-xl px-5 py-3 shadow-inner">
+        <div class="text-center">
+          <span class="text-[11px] text-slate-400 font-bold uppercase block">현재 진행 분기</span>
+          <span id="currentRoundText" class="text-xl font-black text-amber-400">1라운드 (봄 신학기)</span>
+        </div>
+        <div class="h-8 w-[1px] bg-slate-800"></div>
+        <div class="text-left">
+          <span class="text-[11px] text-slate-400 block font-medium">AI 소비자 쇼핑 알고리즘</span>
+          <span id="marketEventBadge" class="text-xs md:text-sm font-bold text-emerald-400">🌱 가성비 탐색 시즌</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 시장 상황 브리핑 배너 -->
+    <div id="eventDescriptionBox" class="bg-gradient-to-r from-amber-950/40 via-slate-900 to-indigo-950/40 border border-amber-800/40 rounded-xl p-4 text-xs md:text-sm text-amber-200 flex items-start gap-3">
+      <span class="text-2xl">📢</span>
+      <div>
+        <strong id="eventTitle" class="text-amber-300 font-bold">1라운드 시장 속보:</strong>
+        <span id="eventDesc" class="text-slate-300 ml-1">초콜릿을 사러 AI 소비자 100명이 몰려왔습니다. AI는 <b>[맛+포장 대비 합리적 가격]</b>을 냉정하게 따집니다. <b>가격을 터무니없이 높게 부르면(폭리) AI 불매운동으로 판매량 0개 및 파산 위기</b>를 맞게 됩니다!</span>
+      </div>
+    </div>
+
+    <!-- 모둠별 의사결정 패널 -->
+    <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 md:p-6 shadow-xl">
+      <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-5 pb-3 border-b border-slate-800">
+        <div>
+          <h2 class="text-lg font-bold text-white flex items-center gap-2">
+            <span>⚙️</span> 모둠별 초콜릿 레시피 & 포장 커스텀 (5개 기업)
+          </h2>
+          <p class="text-xs text-slate-400">각 재료를 선택하면 <b>1개당 생산 원가</b>가 자동으로 계산됩니다. 적정 판매 가격과 홍보비를 책정하세요.</p>
+        </div>
+        <div class="text-xs bg-slate-950 px-3 py-1.5 rounded-lg border border-slate-800 text-amber-300 font-semibold">
+          💰 모둠별 시작 자본금: 25,000원 | 총 AI 소비자: 100명
+        </div>
+      </div>
+
+      <!-- 5개 모둠 카드 그리드 -->
+      <div class="grid grid-cols-1 lg:grid-cols-5 gap-4" id="teamInputsContainer">
+        <!-- JS로 렌더링 -->
+      </div>
+
+      <!-- 하단 조작 버튼 -->
+      <div class="mt-6 flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-800">
+        <div class="text-xs text-slate-400">
+          💡 <span class="text-amber-300 font-semibold">이윤 공식:</span> (판매가격 × 판매수량) - [ (총원가 × 판매수량) + 홍보비 ]
+        </div>
+        <div class="flex items-center gap-3">
+          <button type="button" id="btnSimulate" onclick="runSimulation()" class="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-600 hover:from-amber-400 hover:to-orange-500 text-white font-extrabold px-6 py-3 rounded-xl shadow-lg shadow-orange-500/25 transition-all transform active:scale-95 flex items-center gap-2 text-sm cursor-pointer">
+            <span>🚀</span> AI 소비자 장바구니 결산 시작!
+          </button>
+          <button type="button" id="btnNextRound" onclick="nextRound()" class="hidden bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-3 rounded-xl transition-all flex items-center gap-2 text-sm cursor-pointer">
+            <span>다음 시즌으로 진행 ▶</span>
+          </button>
+          <button type="button" onclick="resetGame()" class="text-xs text-rose-400 hover:text-rose-300 border border-rose-500/30 hover:border-rose-400 px-3 py-2 rounded-lg bg-rose-950/20 transition-all cursor-pointer font-medium">
+            🔄 새 게임 시작 (초기화)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 시뮬레이션 결과 및 순위표 -->
+    <div id="resultSection" class="hidden space-y-6">
+
+      <!-- 실시간 리더보드 (순위) -->
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <h2 class="text-lg font-bold text-amber-300 flex items-center gap-2 mb-4">
+          <span>🏆</span> 실시간 기업 누적 자본금 랭킹
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-3" id="leaderboardContainer">
+          <!-- 랭킹 카드 JS 렌더링 -->
+        </div>
+      </div>
+
+      <!-- 전 모둠 AI 경영 컨설팅 & 피드백 리포트 -->
+      <div class="bg-gradient-to-br from-slate-900 via-slate-900 to-indigo-950/70 border-2 border-slate-700 rounded-2xl p-5 md:p-6 shadow-2xl space-y-5">
+        
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b border-slate-800 pb-4">
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="text-2xl">🧠</span>
+              <h3 class="text-xl font-black text-white">
+                모둠별 AI 경영 컨설팅 & 피드백 리포트
+              </h3>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">궁금한 모둠 버튼을 클릭하면, 각 모둠의 성패 원인과 다음 라운드 역전 팁을 볼 수 있습니다.</p>
+          </div>
+          <span class="text-xs bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/40 font-bold">
+            모둠 맞춤 처방전
+          </span>
+        </div>
+
+        <!-- 모둠 선택 탭 버튼 목록 -->
+        <div class="flex flex-wrap gap-2" id="teamTabsContainer">
+          <!-- JS 렌더링 -->
+        </div>
+
+        <!-- 선택된 모둠의 상세 피드백 카드 내용 -->
+        <div id="selectedTeamFeedbackCard" class="bg-slate-950 border border-slate-800 rounded-xl p-5 space-y-4">
+          <!-- JS로 동적 교체됨 -->
+        </div>
+
+      </div>
+
+      <!-- 이번 라운드 상세 결산 보고서 -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2 mb-4">
+          <span>📊</span> 이번 시즌 AI 쇼핑몰 판매 결과 및 손익 계산서
+        </h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs md:text-sm text-slate-300">
+            <thead class="bg-slate-950 text-[11px] uppercase text-slate-400 border-b border-slate-800">
+              <tr>
+                <th class="p-3">기업명</th>
+                <th class="p-3">레시피 조합 요약</th>
+                <th class="p-3 text-amber-300">개당 총원가</th>
+                <th class="p-3 text-cyan-300 font-bold">판매가격</th>
+                <th class="p-3 text-purple-300">마케팅비</th>
+                <th class="p-3 text-amber-400 font-extrabold text-sm">AI 구매량</th>
+                <th class="p-3">총매출</th>
+                <th class="p-3 text-rose-300">총비용</th>
+                <th class="p-3 text-emerald-400 font-extrabold text-sm">이번시즌 이윤</th>
+                <th class="p-3 font-black text-white text-base">누적 자본금</th>
+              </tr>
+            </thead>
+            <tbody id="resultTableBody" class="divide-y divide-slate-800">
+              <!-- 결과 로우 -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- 하단 액션 버튼 -->
+        <div class="mt-6 flex flex-wrap justify-between items-center gap-3 pt-4 border-t border-slate-800">
+          <div class="text-xs text-slate-400">
+            결과를 확인한 후 다음 시즌으로 넘어가거나 언제든 새 게임으로 시작할 수 있습니다.
+          </div>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="resetGame()" class="text-xs text-rose-400 hover:text-rose-300 border border-rose-500/30 px-3 py-2 rounded-lg bg-rose-950/20 transition-all cursor-pointer font-medium">
+              🔄 새 게임 시작 (초기화)
+            </button>
+            <button type="button" id="btnNextRoundBottom" onclick="nextRound()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold px-5 py-2.5 rounded-xl transition-all flex items-center gap-2 text-xs md:text-sm cursor-pointer">
+              <span>다음 시즌으로 진행 ▶</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- 푸터: 제작자 표기 -->
+    <footer class="mt-8 pt-6 pb-4 border-t border-slate-800 text-center text-xs text-slate-500 space-y-1">
+      <p class="font-medium text-slate-400">
+        🎓 제작자: <span class="text-amber-400 font-bold">양평초등학교 강인한 선생님</span>
+      </p>
+      <p class="text-[11px] text-slate-600">
+        2026학년도 6학년 2학기 사회과 [1. 경제 주체의 역할과 우리나라 경제 체제의 특징] 수업용 에듀테크 시뮬레이터
+      </p>
+    </footer>
+
+  </div>
+
+  <script>
+    let currentRound = 1;
+    const maxRounds = 3;
+    let currentAllFeedbacks = [];
+    let selectedFeedbackTeamId = 1;
+
+    const roundEvents = {
+      1: {
+        title: "1라운드 (봄 신학기): 실속형 가성비 탐색 시즌",
+        desc: "AI 소비자 100명이 초콜릿 쇼핑몰에 들어왔습니다. AI는 [맛+포장 대비 가격]을 깐깐하게 계산합니다. 터무니없이 비싼 바가지 제품은 거들떠보지도 않습니다!",
+        badge: "🌱 실속 가성비 중시",
+        marketingMultiplier: 1.0,
+        packagePreference: 1.0,
+        ecoBonusMultiplier: 1.2,
+        costInflation: 1.0
+      },
+      2: {
+        title: "2라운드 (여름 방학): 숏폼 챌린지 & 인스타 감성 대유행!",
+        desc: "SNS 릴스와 숏폼 먹방이 대유행! 예쁜 포장지(홀로그램 틴케이스)와 숏폼 마케팅 광고 효과가 2.3배로 폭등합니다. 비주얼과 홍보에 투자한 모둠이 승기!",
+        badge: "🔥 SNS 숏폼 & 틴케이스 감성 열풍",
+        marketingMultiplier: 2.3,
+        packagePreference: 1.8,
+        ecoBonusMultiplier: 1.4,
+        costInflation: 1.0
+      },
+      3: {
+        title: "3라운드 (가을 추석): 원자재 파동 & 가치소비(친환경) 열풍",
+        desc: "카카오와 피스타치오 수입 가격이 폭등해 모든 재료 원가가 30% 상승했습니다! 한편, 똑똑해진 AI는 '친환경 공정무역 인증' 마크가 붙은 착한 기업에 큰 가산점을 줍니다.",
+        badge: "⚡ 원가 급등 & 친환경 ESG 가치소비",
+        marketingMultiplier: 0.9,
+        packagePreference: 1.1,
+        ecoBonusMultiplier: 2.5,
+        costInflation: 1.3
+      }
+    };
+
+    const baseOptions = {
+      milk: { label: "밀크 초콜릿", cost: 400, score: 25 },
+      dark: { label: "다크 카카오 72%", cost: 700, score: 45 },
+      swiss: { label: "스위스 수제 명품초코", cost: 1200, score: 75 }
+    };
+
+    const fillingOptions = {
+      peanut: { label: "일반면 + 피넛버터", cost: 400, score: 25 },
+      pistachio: { label: "바삭 카다이프 + 100% 피스타치오잼", cost: 900, score: 60 },
+      luxury: { label: "더블 카다이프 + 피스타치오 + 금박", cost: 1600, score: 95 }
+    };
+
+    const packageOptions = {
+      vinyl: { label: "비닐 투명봉투 (초간단)", cost: 100, score: 5 },
+      craft: { label: "감성 크라프트 상자 (인기)", cost: 400, score: 25 },
+      tincase: { label: "홀로그램 틴케이스 + 리본 (선물용)", cost: 900, score: 60 }
+    };
+
+    const ecoCertification = {
+      cost: 300,
+      scoreBonus: 25
+    };
+
+    let teams = [
+      { id: 1, name: "1모둠 (달콤팩토리)", capital: 25000, lastProfit: 0, lastSales: 0, rank: 1 },
+      { id: 2, name: "2모둠 (황금초콜릿)", capital: 25000, lastProfit: 0, lastSales: 0, rank: 2 },
+      { id: 3, name: "3모둠 (카다이프장인)", capital: 25000, lastProfit: 0, lastSales: 0, rank: 3 },
+      { id: 4, name: "4모둠 (피스타마스터)", capital: 25000, lastProfit: 0, lastSales: 0, rank: 4 },
+      { id: 5, name: "5모둠 (초코유니버스)", capital: 25000, lastProfit: 0, lastSales: 0, rank: 5 }
+    ];
+
+    function initUI() {
+      renderTeamInputs();
+      updateRoundBanner();
+    }
+
+    function updateRoundBanner() {
+      const ev = roundEvents[currentRound];
+      document.getElementById('currentRoundText').textContent = `${currentRound}라운드`;
+      document.getElementById('marketEventBadge').textContent = ev.badge;
+      document.getElementById('eventTitle').textContent = ev.title;
+      document.getElementById('eventDesc').textContent = ev.desc;
+    }
+
+    function renderTeamInputs() {
+      const container = document.getElementById('teamInputsContainer');
+      container.innerHTML = '';
+      const inflation = roundEvents[currentRound].costInflation;
+
+      teams.forEach((team) => {
+        const card = document.createElement('div');
+        card.className = "bg-slate-950 border border-slate-800 rounded-xl p-3.5 flex flex-col justify-between hover:border-amber-500/40 transition-all text-xs";
+        card.innerHTML = `
+          <div class="space-y-2.5">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-800">
+              <span class="font-bold text-white text-sm truncate">${team.name}</span>
+              <span class="text-[11px] px-2 py-0.5 rounded-full bg-slate-900 text-amber-300 font-bold">
+                ${team.capital.toLocaleString()}원
+              </span>
+            </div>
+
+            <!-- 1. 초코 베이스 -->
+            <div>
+              <label class="block text-slate-400 font-medium mb-1">1. 초코 베이스 선택</label>
+              <select id="base_${team.id}" onchange="recalcUnitCost(${team.id})" class="w-full bg-slate-900 border border-slate-700 rounded-md p-1.5 text-slate-200">
+                <option value="milk">밀크초코 (${Math.round(400 * inflation)}원)</option>
+                <option value="dark" selected>다크 카카오 72% (${Math.round(700 * inflation)}원)</option>
+                <option value="swiss">스위스 명품초코 (${Math.round(1200 * inflation)}원)</option>
+              </select>
+            </div>
+
+            <!-- 2. 속재료/토핑 -->
+            <div>
+              <label class="block text-slate-400 font-medium mb-1">2. 속재료(필링) 선택</label>
+              <select id="filling_${team.id}" onchange="recalcUnitCost(${team.id})" class="w-full bg-slate-900 border border-slate-700 rounded-md p-1.5 text-slate-200">
+                <option value="peanut">일반면+피넛 (${Math.round(400 * inflation)}원)</option>
+                <option value="pistachio" selected>바삭카다이프+피스타 (${Math.round(900 * inflation)}원)</option>
+                <option value="luxury">더블카다이프+금박 (${Math.round(1600 * inflation)}원)</option>
+              </select>
+            </div>
+
+            <!-- 3. 포장 패키지 -->
+            <div>
+              <label class="block text-slate-400 font-medium mb-1">3. 포장 디자인 선택</label>
+              <select id="package_${team.id}" onchange="recalcUnitCost(${team.id})" class="w-full bg-slate-900 border border-slate-700 rounded-md p-1.5 text-slate-200">
+                <option value="vinyl">비닐 투명봉투 (${Math.round(100 * inflation)}원)</option>
+                <option value="craft" selected>감성 크라프트 상자 (${Math.round(400 * inflation)}원)</option>
+                <option value="tincase">홀로그램 틴케이스 (${Math.round(900 * inflation)}원)</option>
+              </select>
+            </div>
+
+            <!-- 4. 사회적 책임 -->
+            <div class="pt-1">
+              <label class="flex items-center gap-2 cursor-pointer bg-slate-900/80 p-2 rounded-lg border border-slate-800 hover:border-emerald-500/50">
+                <input type="checkbox" id="eco_${team.id}" onchange="recalcUnitCost(${team.id})" class="accent-emerald-500 w-3.5 h-3.5">
+                <span class="text-[11px] text-emerald-300 font-medium">🌱 친환경·공정무역 (+${Math.round(300 * inflation)}원)</span>
+              </label>
+            </div>
+
+            <!-- 개당 총원가 자동 계산 박스 -->
+            <div class="bg-amber-950/30 border border-amber-900/60 rounded-lg p-2 text-center">
+              <span class="text-[10px] text-slate-400 block">초콜릿 1개당 총 원가</span>
+              <span id="costDisplay_${team.id}" class="text-sm font-black text-amber-300">2,000원</span>
+            </div>
+
+            <!-- 5. 판매 가격 -->
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="text-slate-400 font-medium">판매 가격 책정 (원)</label>
+                <span class="text-[10px] text-amber-400 font-medium">권장: 2,500~4,500원</span>
+              </div>
+              <input type="number" id="price_${team.id}" value="${team.id === 1 ? 3200 : team.id === 2 ? 3500 : team.id === 3 ? 3800 : team.id === 4 ? 2800 : 3000}" step="100" min="500" max="20000"
+                class="w-full bg-slate-900 border border-slate-700 rounded-md p-1.5 text-cyan-300 font-bold">
+            </div>
+
+            <!-- 6. 마케팅비 -->
+            <div>
+              <label class="block text-slate-400 font-medium mb-1">마케팅 홍보비 투자</label>
+              <select id="marketing_${team.id}" class="w-full bg-slate-900 border border-slate-700 rounded-md p-1.5 text-purple-300 font-semibold">
+                <option value="0">자연 입소문 (0원)</option>
+                <option value="1000" selected>숏폼 챌린지 광고 (1,000원)</option>
+                <option value="2500">인플루언서 단독 협찬 (2,500원)</option>
+              </select>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+        recalcUnitCost(team.id);
+      });
+    }
+
+    function recalcUnitCost(teamId) {
+      const inflation = roundEvents[currentRound].costInflation;
+      const baseKey = document.getElementById(`base_${teamId}`).value;
+      const fillingKey = document.getElementById(`filling_${teamId}`).value;
+      const packageKey = document.getElementById(`package_${teamId}`).value;
+      const isEco = document.getElementById(`eco_${teamId}`).checked;
+
+      const baseCost = Math.round(baseOptions[baseKey].cost * inflation);
+      const fillingCost = Math.round(fillingOptions[fillingKey].cost * inflation);
+      const packageCost = Math.round(packageOptions[packageKey].cost * inflation);
+      const ecoCost = isEco ? Math.round(ecoCertification.cost * inflation) : 0;
+
+      const totalUnitCost = baseCost + fillingCost + packageCost + ecoCost;
+      document.getElementById(`costDisplay_${teamId}`).textContent = `${totalUnitCost.toLocaleString()}원`;
+      return totalUnitCost;
+    }
+
+    // ★ 터무니없이 비싼 가격을 확실히 응징하는 현실적 경제 AI 알고리즘
+    function runSimulation() {
+      const ev = roundEvents[currentRound];
+      const totalAICustomers = 100;
+      let teamDecisions = [];
+
+      teams.forEach(team => {
+        const baseKey = document.getElementById(`base_${team.id}`).value;
+        const fillingKey = document.getElementById(`filling_${team.id}`).value;
+        const packageKey = document.getElementById(`package_${team.id}`).value;
+        const isEco = document.getElementById(`eco_${team.id}`).checked;
+        const price = parseInt(document.getElementById(`price_${team.id}`).value) || 3000;
+        const marketing = parseInt(document.getElementById(`marketing_${team.id}`).value) || 0;
+
+        const totalUnitCost = recalcUnitCost(team.id);
+
+        let tasteScore = baseOptions[baseKey].score + fillingOptions[fillingKey].score;
+        let packageScore = packageOptions[packageKey].score * (ev.packagePreference || 1.0);
+        let ecoBonus = isEco ? (ecoCertification.scoreBonus * ev.ecoBonusMultiplier) : 0;
+        let totalQualityAppeal = tasteScore + packageScore + ecoBonus;
+
+        // 1. 소비자의 최대 지불 가능 가격(Reservation Price) 심리적 저항선
+        // 초콜릿 가격이 5,500원을 넘어가면 소비자는 "터무니없는 바가지"로 보고 외면하기 시작
+        // 가격이 6,500원 이상이거나 원가의 2.4배를 초과하면 매력도가 0으로 급락
+        let appealScore = 0;
+        let isBoycotted = false; // 불매운동 플래그
+        let isOverpriced = false;
+
+        // 원가 대비 마진 비율
+        const markupRatio = price / totalUnitCost;
+
+        if (price > 6500 || markupRatio > 2.5) {
+          // 절대 사지 않음 (구매량 0개)
+          appealScore = 0;
+          isBoycotted = true;
+          isOverpriced = true;
+        } else {
+          // 비선형 가격 탄력성 적용: (가격 / 1000)^2.5 로 급격히 감쇄
+          // 가격이 2배가 되면 매력도는 약 5.6배 감소하여 고가 폭리가 불가능해짐
+          const priceRatio = Math.max(price, 500) / 1000.0;
+          const pricePenalty = Math.pow(priceRatio, 2.6);
+
+          let baseAppeal = (totalQualityAppeal * 100.0) / pricePenalty;
+
+          // 마케팅 효과
+          let marketingBoost = 1 + (Math.sqrt(marketing) / 25) * ev.marketingMultiplier;
+          appealScore = baseAppeal * marketingBoost;
+
+          // 마진율이 2배 초과인 경우 추가 감점
+          if (markupRatio > 1.9) {
+            appealScore *= 0.35;
+            isOverpriced = true;
+          }
+        }
+
+        const summaryText = `${baseOptions[baseKey].label.split(' ')[0]} + ${fillingOptions[fillingKey].label.split(' ')[0]} + ${packageOptions[packageKey].label.split(' ')[0]}${isEco ? ' + 🌱인증' : ''}`;
+
+        teamDecisions.push({
+          teamId: team.id,
+          teamName: team.name,
+          summary: summaryText,
+          unitCost: totalUnitCost,
+          price: price,
+          margin: price - totalUnitCost,
+          markupRatio: markupRatio,
+          marketing: marketing,
+          isEco: isEco,
+          isOverpriced: isOverpriced,
+          isBoycotted: isBoycotted,
+          packageKey: packageKey,
+          appealScore: appealScore
+        });
+      });
+
+      // 100명의 AI 소비자 분배
+      const totalAppeal = teamDecisions.reduce((sum, d) => sum + d.appealScore, 0);
+      let allocatedTotal = 0;
+
+      teamDecisions.forEach(d => {
+        if (totalAppeal <= 0 || d.appealScore <= 0 || d.isBoycotted) {
+          d.sales = 0; // 불매운동 당한 팀은 무조건 0개 판매!
+        } else {
+          let share = Math.round((d.appealScore / totalAppeal) * totalAICustomers);
+          d.sales = share;
+          allocatedTotal += share;
+        }
+      });
+
+      // 반올림 오차 보정 (살아남은 팀 중 가장 매력적인 팀에게 잔여분 배분)
+      if (allocatedTotal < totalAICustomers && totalAppeal > 0) {
+        const topTeam = teamDecisions.filter(d => !d.isBoycotted).sort((a,b) => b.appealScore - a.appealScore)[0];
+        if (topTeam) {
+          topTeam.sales += (totalAICustomers - allocatedTotal);
+        }
+      }
+
+      // 손익 결산
+      let roundSummaryHtml = '';
+
+      teamDecisions.forEach(d => {
+        const team = teams.find(t => t.id === d.teamId);
+        const revenue = d.sales * d.price;
+        const totalProductionCost = d.sales * d.unitCost;
+        const totalCost = totalProductionCost + d.marketing;
+        const profit = revenue - totalCost;
+
+        team.lastSales = d.sales;
+        team.lastProfit = profit;
+        team.capital += profit;
+        d.profit = profit;
+        d.revenue = revenue;
+        d.totalCost = totalCost;
+        d.capital = team.capital;
+
+        const profitClass = profit >= 0 ? "text-emerald-400 font-bold" : "text-rose-400 font-bold";
+        const profitSign = profit > 0 ? "+" : "";
+
+        roundSummaryHtml += `
+          <tr class="hover:bg-slate-800/60 transition-colors">
+            <td class="p-3 font-bold text-white">${team.name}</td>
+            <td class="p-3 text-[11px] text-slate-300">${d.summary}</td>
+            <td class="p-3 font-semibold text-amber-300">${d.unitCost.toLocaleString()}원</td>
+            <td class="p-3 font-bold text-cyan-300">${d.price.toLocaleString()}원</td>
+            <td class="p-3 text-purple-300">${d.marketing.toLocaleString()}원</td>
+            <td class="p-3 font-black ${d.sales === 0 ? 'text-rose-400' : 'text-amber-400'} text-base">
+              ${d.sales}개 ${d.sales === 0 ? '<span class="text-[10px] text-rose-400 block font-normal">(불매 외면)</span>' : ''}
+            </td>
+            <td class="p-3">${revenue.toLocaleString()}원</td>
+            <td class="p-3 text-rose-300">${totalCost.toLocaleString()}원</td>
+            <td class="p-3 ${profitClass}">${profitSign}${profit.toLocaleString()}원</td>
+            <td class="p-3 font-black text-white text-base">${team.capital.toLocaleString()}원</td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('resultTableBody').innerHTML = roundSummaryHtml;
+      updateLeaderboard();
+
+      // 순위 매기기
+      const sortedDecisions = [...teamDecisions].sort((a, b) => b.profit - a.profit);
+      sortedDecisions.forEach((d, idx) => {
+        d.roundRank = idx + 1;
+      });
+
+      currentAllFeedbacks = teamDecisions;
+      selectedFeedbackTeamId = sortedDecisions[0].teamId;
+
+      renderAllTeamTabs(teamDecisions);
+      renderSelectedTeamFeedback(selectedFeedbackTeamId);
+
+      document.getElementById('resultSection').classList.remove('hidden');
+      document.getElementById('btnSimulate').classList.add('hidden');
+
+      if (currentRound < maxRounds) {
+        document.getElementById('btnNextRound').classList.remove('hidden');
+        document.getElementById('btnNextRoundBottom').classList.remove('hidden');
+      } else {
+        document.getElementById('btnNextRound').classList.add('hidden');
+        document.getElementById('btnNextRoundBottom').classList.add('hidden');
+      }
+
+      document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function renderAllTeamTabs(teamDecisions) {
+      const container = document.getElementById('teamTabsContainer');
+      container.innerHTML = '';
+
+      teamDecisions.forEach(d => {
+        const isSelected = (d.teamId === selectedFeedbackTeamId);
+        const rankMedal = d.roundRank === 1 ? '🥇 1위' : d.roundRank === 2 ? '🥈 2위' : d.roundRank === 3 ? '🥉 3위' : `${d.roundRank}위`;
+        const activeClass = isSelected 
+          ? 'bg-amber-500 text-slate-950 font-black shadow-lg shadow-amber-500/20 border-amber-400' 
+          : 'bg-slate-950 text-slate-300 border-slate-800 hover:border-slate-600';
+
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.onclick = () => {
+          selectedFeedbackTeamId = d.teamId;
+          renderAllTeamTabs(currentAllFeedbacks);
+          renderSelectedTeamFeedback(d.teamId);
+        };
+        btn.className = `px-3.5 py-2 rounded-xl text-xs font-bold border transition-all flex items-center gap-1.5 cursor-pointer ${activeClass}`;
+        btn.innerHTML = `
+          <span>${d.teamName.split(' ')[0]}</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-full ${isSelected ? 'bg-slate-950/20 text-slate-950' : 'bg-slate-900 text-amber-400'}">${rankMedal}</span>
+        `;
+        container.appendChild(btn);
+      });
+    }
+
+    function renderSelectedTeamFeedback(teamId) {
+      const d = currentAllFeedbacks.find(item => item.teamId === teamId);
+      if (!d) return;
+
+      const card = document.getElementById('selectedTeamFeedbackCard');
+      const rankBadge = d.roundRank === 1 ? '🥇 이번 시즌 1위 (최고 기업)' : d.roundRank === 2 ? '🥈 2위 (우수 기업)' : d.roundRank === 3 ? '🥉 3위' : `${d.roundRank}위`;
+      const profitText = d.profit >= 0 ? `+${d.profit.toLocaleString()}원` : `${d.profit.toLocaleString()}원`;
+      const profitColor = d.profit >= 0 ? 'text-emerald-400' : 'text-rose-400';
+
+      // 1. 가격 & 마진 진단
+      let marginTitle = "💰 1. 가격 & 마진(이윤) 진단";
+      let marginContent = "";
+      if (d.isBoycotted) {
+        marginContent = `🚨 <b>폭리(바가지)로 인한 전액 불매!</b> 판매가(${d.price.toLocaleString()}원)가 상식을 벗어나 AI 소비자들이 불매운동을 벌였습니다. <b>판매량 0개로 매출 0원</b>을 기록하며 큰 손해를 입었습니다.`;
+      } else if (d.isOverpriced) {
+        marginContent = `⚠️ <b>가격 거품 경고!</b> 원가(${d.unitCost.toLocaleString()}원) 대비 판매가(${d.price.toLocaleString()}원)가 너무 비싸 AI 소비자가 다른 가게로 발길을 돌렸습니다.`;
+      } else if (d.margin <= 300) {
+        marginContent = `⚠️ <b>마진 부족!</b> 원가(${d.unitCost.toLocaleString()}원) 대비 판매가(${d.price.toLocaleString()}원) 차이가 ${d.margin.toLocaleString()}원에 불과해 팔아도 남는 게 없었습니다.`;
+      } else {
+        marginContent = `✅ <b>적정 마진 달성!</b> 원가(${d.unitCost.toLocaleString()}원) 대비 판매가(${d.price.toLocaleString()}원으로 1개 팔릴 때마다 <b>${d.margin.toLocaleString()}원의 알짜 순이익</b>을 챙겼습니다.`;
+      }
+
+      // 2. 레시피 & AI 호감도 진단
+      let productTitle = "👅 2. 레시피 & AI 호감도 진단";
+      let productContent = "";
+      if (d.isBoycotted) {
+        productContent = `아무리 좋은 재료를 넣었어도, 가격이 터무니없이 비싸면 소비자는 지갑을 절대 열지 않는다는 것을 보여줍니다.`;
+      } else {
+        productContent = `선택한 조합: <b>[${d.summary}]</b> 👉 AI 소비자 <b>${d.sales}명</b>이 구매했습니다. `;
+        if (currentRound === 2 && d.packageKey !== 'tincase') {
+          productContent += `(2라운드는 틴케이스 감성 열풍인데 비닐/상자를 선택해 아쉽게 표를 빼앗겼습니다.)`;
+        } else if (currentRound === 3 && !d.isEco) {
+          productContent += `(3라운드는 친환경 가치소비 시즌인데 친환경 인증 마크가 없어 AI 가산점을 놓쳤습니다.)`;
+        }
+      }
+
+      // 3. 마케팅 비용 진단
+      let marketingTitle = "📢 3. 마케팅 홍보비 진단";
+      let marketingContent = "";
+      if (d.sales === 0 && d.marketing > 0) {
+        marketingContent = `🚨 <b>광고비 전액 손실!</b> 물건이 0개 팔렸는데 광고비로 ${d.marketing.toLocaleString()}원을 지출하여 고스란히 적자가 되었습니다.`;
+      } else if (d.marketing === 0) {
+        marketingContent = `광고비 0원으로 비용을 아꼈으나, 홍보 효과가 없어 노출 기회를 놓쳤습니다.`;
+      } else if (d.marketing === 1000) {
+        marketingContent = `1,000원 숏폼 광고로 적절한 비용으로 가성비 높은 홍보 효과를 누렸습니다.`;
+      } else {
+        marketingContent = `2,500원 인플루언서 협찬으로 대량 홍보를 진행했습니다.`;
+      }
+
+      // 4. 다음 라운드 역전을 위한 맞춤 처방전
+      let prescription = "";
+      if (d.isBoycotted) {
+        prescription = `🔧 <b>핵심 처방:</b> 시장의 현실을 인식해야 합니다! 다음 시즌에는 판매 가격을 <b>원가의 1.5~2배 수준(3,000~4,200원대)</b>으로 대폭 낮추어야만 소비자가 구매를 시작합니다!`;
+      } else if (d.roundRank === 1) {
+        prescription = `🎉 <b>수성 전략:</b> 적정 원가와 합리적 판매 가격의 균형이 완벽했습니다! 다음 시즌의 시장 이벤트(SNS 열풍, 친환경 등)에 맞춰 재빠르게 옵션을 업그레이드하세요!`;
+      } else if (d.profit < 0) {
+        prescription = `🔧 <b>역전 처방:</b> 1개당 남는 마진(판매가 - 원가)이 800~1,500원 수준이 되도록 가격을 조정하고, 광고비 낭비를 줄여 흑자로 전환하세요!`;
+      } else {
+        prescription = `🔧 <b>역전 처방:</b> 포장 패키지를 개선하거나 트렌드에 맞는 홍보를 늘려 판매량을 5~10개 더 끌어올리세요!`;
+      }
+
+      card.innerHTML = `
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 border-b border-slate-800 pb-3">
+          <div>
+            <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">${rankBadge}</span>
+            <h4 class="text-lg font-black text-white">${d.teamName} 경영 성적표</h4>
+          </div>
+          <div class="text-right">
+            <span class="text-xs text-slate-400">이번 시즌 이윤: </span>
+            <span class="text-base font-black ${profitColor}">${profitText}</span>
+            <span class="text-xs text-slate-500 block">(총 매출 ${d.revenue.toLocaleString()}원 - 총 비용 ${d.totalCost.toLocaleString()}원)</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800/80">
+            <div class="font-bold text-amber-300 text-xs mb-1.5">${marginTitle}</div>
+            <p class="text-xs text-slate-300 leading-relaxed">${marginContent}</p>
+          </div>
+          <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800/80">
+            <div class="font-bold text-cyan-300 text-xs mb-1.5">${productTitle}</div>
+            <p class="text-xs text-slate-300 leading-relaxed">${productContent}</p>
+          </div>
+          <div class="bg-slate-900 p-3.5 rounded-xl border border-slate-800/80">
+            <div class="font-bold text-purple-300 text-xs mb-1.5">${marketingTitle}</div>
+            <p class="text-xs text-slate-300 leading-relaxed">${marketingContent}</p>
+          </div>
+        </div>
+
+        <!-- 다음 시즌 액션 플랜 -->
+        <div class="bg-indigo-950/40 border border-indigo-500/30 rounded-xl p-3.5 text-xs text-indigo-200 flex items-start gap-2.5">
+          <span class="text-lg">🎯</span>
+          <div class="leading-relaxed">
+            ${prescription}
+          </div>
+        </div>
+      `;
+    }
+
+    function updateLeaderboard() {
+      const sortedTeams = [...teams].sort((a, b) => b.capital - a.capital);
+      const container = document.getElementById('leaderboardContainer');
+      container.innerHTML = '';
+
+      sortedTeams.forEach((team, rankIndex) => {
+        team.rank = rankIndex + 1;
+        const rankMedal = team.rank === 1 ? '🥇 1위 (최고 기업)' : team.rank === 2 ? '🥈 2위' : team.rank === 3 ? '🥉 3위' : `${team.rank}위`;
+        const cardBg = team.rank === 1 ? 'bg-gradient-to-b from-amber-950/70 to-slate-900 border-amber-400 shadow-amber-500/20' : 'bg-slate-950 border-slate-800';
+
+        const card = document.createElement('div');
+        card.className = `${cardBg} border rounded-xl p-3 text-center transition-all shadow-md`;
+        card.innerHTML = `
+          <div class="text-[11px] font-bold text-amber-400 mb-1">${rankMedal}</div>
+          <div class="text-xs font-black text-white truncate">${team.name}</div>
+          <div class="text-base font-black text-amber-300 mt-1">${team.capital.toLocaleString()}<span class="text-[10px] text-slate-400">원</span></div>
+          <div class="text-[10px] ${team.lastProfit >= 0 ? 'text-emerald-400' : 'text-rose-400'} mt-1 font-semibold">
+            직전이윤: ${team.lastProfit >= 0 ? '+' : ''}${team.lastProfit.toLocaleString()}원
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function nextRound() {
+      if (currentRound >= maxRounds) return;
+      currentRound++;
+      updateRoundBanner();
+
+      document.getElementById('btnSimulate').classList.remove('hidden');
+      document.getElementById('btnNextRound').classList.add('hidden');
+      document.getElementById('resultSection').classList.add('hidden');
+
+      renderTeamInputs();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function resetGame() {
+      currentRound = 1;
+      teams = [
+        { id: 1, name: "1모둠 (달콤팩토리)", capital: 25000, lastProfit: 0, lastSales: 0, rank: 1 },
+        { id: 2, name: "2모둠 (황금초콜릿)", capital: 25000, lastProfit: 0, lastSales: 0, rank: 2 },
+        { id: 3, name: "3모둠 (카다이프장인)", capital: 25000, lastProfit: 0, lastSales: 0, rank: 3 },
+        { id: 4, name: "4모둠 (피스타마스터)", capital: 25000, lastProfit: 0, lastSales: 0, rank: 4 },
+        { id: 5, name: "5모둠 (초코유니버스)", capital: 25000, lastProfit: 0, lastSales: 0, rank: 5 }
+      ];
+      initUI();
+
+      document.getElementById('resultSection').classList.add('hidden');
+      document.getElementById('btnSimulate').classList.remove('hidden');
+      document.getElementById('btnNextRound').classList.add('hidden');
+
+      const toast = document.getElementById('resetToast');
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.add('hidden');
+      }, 2500);
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    window.onload = initUI;
+  </script>
+</body>
+</html>
